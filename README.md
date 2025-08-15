@@ -7,11 +7,8 @@ Hier ist eine kompakte, gut strukturierte `README.md` – aus Sicht eines Entwic
 
 Ein einfaches Beispielprojekt, das zeigt, wie man eine Spring Boot-Anwendung mit Docker betreibt.
 
----
-
 ## 📁 Projektstruktur
 
-```
 .
 ├── src/main/java/edu/yacoubi/dockerapp/DockerDemoApplication.java
 ├── pom.xml
