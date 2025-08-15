@@ -20,9 +20,15 @@ Ein einfaches Beispielprojekt, das zeigt, wie man eine Spring Boot-Anwendung mit
 ## 🧱 Bauplan: Dockerfile
 
 ```Dockerfile
+# 🧱 Basis-Image mit Java 17 JDK, schlanke Version für kleinere Container
 FROM openjdk:17-jdk-slim
+
+# 📦 Kopiert die gebaute JAR-Datei ins Image und nennt sie "app.jar"
 COPY target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
+
+# 🚀 Startet die Anwendung beim Container-Start
 ENTRYPOINT ["java", "-jar", "/app.jar"]
+
 ```
 
 ---
