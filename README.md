@@ -1,4 +1,4 @@
-Sehr gerne, Ahmed! Hier ist eine kompakte, gut strukturierte `README.md` – aus Sicht eines Entwicklers, mit klaren Schritten, deutschen Begriffen und ein paar passenden Emojis für Übersicht und Stil. 📘🐳
+Hier ist eine kompakte, gut strukturierte `README.md` – aus Sicht eines Entwicklers, mit klaren Schritten, deutschen Begriffen und ein paar passenden Emojis für Übersicht und Stil. 📘🐳
 
 ---
 
