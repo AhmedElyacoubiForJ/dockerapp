@@ -79,8 +79,10 @@ docker rmi springboot-docker-demo
 
 ## ✅ Ergebnis
 
-Die Anwendung läuft im Docker-Container und ist über `localhost:8080/api/hello` erreichbar oder über
-`curl http://localhost:8080/api/helllo`.
-Ideal als Einstieg in die Containerisierung mit Spring Boot.
+Die Anwendung läuft im Docker-Container und ist erreichbar unter:
+
+- 🌐 `http://localhost:8080/api/hello`
+- 🧪 oder per `curl`: ```bash curl http://localhost:8080/api/hello```
+
 
 
