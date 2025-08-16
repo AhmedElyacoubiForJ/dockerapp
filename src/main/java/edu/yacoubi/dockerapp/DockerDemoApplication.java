@@ -6,17 +6,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @SpringBootApplication
 @RestController
-@RequestMapping("/api")
 public class DockerDemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(DockerDemoApplication.class, args);
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "👋 Hello from Spring Boot + Docker!";
+    @GetMapping("/api/hello")
+    public Map<String, String> hello() {
+        return Map.of("message", "👋 Hello from Spring Boot, connected to PostgreSQL running in a Docker container!");
     }
+
 }

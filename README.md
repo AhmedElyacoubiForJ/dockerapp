@@ -2,17 +2,21 @@ Hier ist eine kompakte, gut strukturierte `README.md` – aus Sicht eines Entwic
 
 ---
 
-```markdown
 # 🚀 Spring Boot + Docker – Mini-Projekt
 
 Ein einfaches Beispielprojekt, das zeigt, wie man eine Spring Boot-Anwendung mit Docker betreibt.
 
 ## 📁 Projektstruktur
-
-.
-├── src/main/java/edu/yacoubi/dockerapp/DockerDemoApplication.java
-├── pom.xml
-└── Dockerfile
+```text
+projekt-root/
+├── .env.template             # ✅ Vorlage für Umgebungsvariablen (nicht geheim)
+├── .env                      # 🔐 Echte Umgebungsvariablen (nicht ins Repo!)
+├── .gitignore                # ➕ Ignoriert .env und andere sensible Dateien
+├── docker-compose.yml        # 🐳 Docker-Setup für App & Datenbank
+├── Dockerfile                # 🔨 Baut das Spring Boot Image
+├── pom.xml                   # 📦 Maven-Konfiguration für das Java-Projekt
+└── src/
+└── DockerDemoApplication.java  # 🚀 Einstiegspunkt meiner Spring Boot App
 ```
 
 ---

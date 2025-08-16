@@ -5,6 +5,18 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Secrets & Local Config
+.env
+.env-config
+
+
 ### STS ###
 .apt_generated
 .classpath
@@ -32,3 +44,4 @@ build/
 
 ### VS Code ###
 .vscode/
+## .env

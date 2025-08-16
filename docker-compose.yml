@@ -1,0 +1,29 @@
+version: '3.8'  # 📦 Version der Compose-Spezifikation
+
+services:
+  db:  # 🗄️ PostgreSQL-Datenbank
+    image: postgres:16
+    container_name: demo-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}  # ✅ Nutze die Standard-DB
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # 🔐 Passwort als Umgebungsvariable
+    ports:
+      - "5432:5432"  # 🌐 Datenbank erreichbar auf localhost:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # 💾 Daten persistent speichern
+
+  app:  # 🚀 Spring Boot Anwendung
+    build: .  # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
+    container_name: demo-app
+    ports:
+      - "8080:8080"  # 🌐 App erreichbar auf localhost:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-postgres}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - db  # ⏳ App startet erst, wenn DB bereit ist
+
+volumes:
+  pgdata:  # 📁 Volume für PostgreSQL-Daten
