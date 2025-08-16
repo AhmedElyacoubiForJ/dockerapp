@@ -1,98 +1,101 @@
-Hier ist eine kompakte, gut strukturierte `README.md` – aus Sicht eines Entwicklers, mit klaren Schritten, deutschen Begriffen und ein paar passenden Emojis für Übersicht und Stil. 📘🐳
+# 🚀 Spring Boot + 🐳 Docker (PostgreSQL) – Mini-Projekt
 
----
-
-# 🚀 Spring Boot + Docker – Mini-Projekt
-
-Ein einfaches Beispielprojekt, das zeigt, wie man eine Spring Boot-Anwendung mit Docker betreibt.
+Ein einfaches Beispielprojekt, bei dem eine lokal laufende Spring Boot-Anwendung auf eine PostgreSQL-Datenbank im Docker-Container zugreift.
 
 ## 📁 Projektstruktur
 ```text
 projekt-root/
-├── .env.template             # ✅ Vorlage für Umgebungsvariablen (nicht geheim)
-├── .env                      # 🔐 Echte Umgebungsvariablen (nicht ins Repo!)
-├── .gitignore                # ➕ Ignoriert .env und andere sensible Dateien
-├── docker-compose.yml        # 🐳 Docker-Setup für App & Datenbank
-├── Dockerfile                # 🔨 Baut das Spring Boot Image
-├── pom.xml                   # 📦 Maven-Konfiguration für das Java-Projekt
+├── .env.template               # ✅ Vorlage für Umgebungsvariablen (nicht geheim)
+├── .env                        # 🔐 Echte Umgebungsvariablen (nicht ins Repo!)
+├── .env-config                 # 📦 Pfad-Konfiguration für update_env_ip.sh
+├── .gitignore                  # ➕ Ignoriert .env, .env-config und sensible Dateien
+├── docker-compose.yml          # 🐳 Docker-Setup für PostgreSQL-Datenbank
+├── start_postgres.sh           # 🔄 Startet den PostgreSQL-Container
+├── update_env_ip.sh            # 🌐 Aktualisiert IP-Adresse in .env
+├── pom.xml                     # 📦 Maven-Konfiguration für das Java-Projekt
+├── README.md                   # 📘 Projektbeschreibung & Anleitung
 └── src/
-└── DockerDemoApplication.java  # 🚀 Einstiegspunkt meiner Spring Boot App
+    └── main/
+        └── java/
+            └── edu/yacoubi/dockerapp/
+                └── DockerDemoApplication.java  # 🚀 Einstiegspunkt der Spring Boot App
 ```
 
 ---
 
-## 🧱 Bauplan: Dockerfile
+## 🔧 Setup & Konfiguration
 
-```Dockerfile
-# 🧱 Basis-Image mit Java 17 JDK, schlanke Version für kleinere Container
-FROM openjdk:17-jdk-slim
+### 1. Umgebungsvariablen (.env)
 
-# 📦 Kopiert die gebaute JAR-Datei ins Image und nennt sie "app.jar"
-COPY target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
+Die Anwendung benötigt eine `.env`-Datei mit Konfigurationswerten.  
+Kopiere die Vorlage und ergänze deine Werte:
 
-# 🚀 Startet die Anwendung beim Container-Start
-ENTRYPOINT ["java", "-jar", "/app.jar"]
-
+```bash
+cp .env.example .env
 ```
 
----
+Bearbeite anschließend .env und trage deine Datenbank- und App-Konfiguration ein.
+
+
+### 2. Pfad-Konfiguration für Skripte (.env-config)
+
+Einige Skripte (z.B. update_env_ip.sh) benötigen den Pfad zur .env-Datei. Kopiere die Vorlage und passe den Pfad an dein System an
+
+```bash
+cp .env-config.template .env-config
+```
+
+Bearbeite `.env-config` und setze deinen echten Pfad:
+
+```text
+ENV_FILE_PATH="/mnt/c/Users/DEIN_NAME/DEIN_PROJEKT/dockerapp/.env"
+```
 
 ## 🪜 Schritte zur Ausführung
 
-### 1️⃣ Projekt bauen (JAR erzeugen)
+### 🔄 1. start_postgres.sh (🐳 PostgreSQL)
+
+Startet den PostgreSQL-Container – wird bei jedem `IntelliJ-Start` im `Ubuntu-Terminal` ausgeführt.
 
 ```bash
-mvn clean package
+./start_postgres.sh
 ```
 
-### 2️⃣ Docker-Image erstellen
+### 🌐 2. update_env_ip.sh
+
+Aktualisiert die IP-Adresse in `.env`, nur wenn sich die Netzwerk-IP geändert hat (z.B. nach Router-Neustart).
 
 ```bash
-docker build -t springboot-docker-demo .
+./update_env_ip.sh
 ```
+🔐 Dadurch bleibt die Verbindung zur Datenbank stabil, ohne unnötige Änderungen.
 
-### 3️⃣ Container starten
+---
 
-```bash
-docker run -p 8080:8080 springboot-docker-demo
-```
-
-### 4️⃣ App im Browser öffnen
+### App im Browser öffnen
 
 ```
 http://localhost:8080
 ```
 
----
-
-## 🧹 Aufräumen (optional)
-
-### Container stoppen
-
-```bash
-docker stop <container-id>
-```
-
-### Container löschen
-
-```bash
-docker rm <container-id>
-```
-
-### Image löschen
-
-```bash
-docker rmi springboot-docker-demo
-```
-
----
-
 ## ✅ Ergebnis
 
-Die Anwendung läuft im Docker-Container und ist erreichbar unter:
+Die Anwendung läuft lokal in IntelliJ und ist erreichbar unter:
 
 - 🌐 `http://localhost:8080/api/hello`
 - 🧪 oder per `curl`: ```bash curl http://localhost:8080/api/hello```
 
+Zusätzlich liefert der Endpunkt /db-info Informationen zur Datenbankverbindung
 
+- 🌐 `http://localhost:8080/db-info`
+- 🧪 oder per `curl`: ```bash curl http://localhost:8080/db-info```
 
+### 📦 Beispielausgabe:
+
+```json 
+{
+  "ip": "172.17.0.2",
+  "database": "postgres",
+  "user": "postgres"
+}
+```
