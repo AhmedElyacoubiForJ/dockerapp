@@ -99,3 +99,10 @@ Zusätzlich liefert der Endpunkt /db-info Informationen zur Datenbankverbindung
   "user": "postgres"
 }
 ```
+
+---
+
+## 📌 Hinweis
+
+Diese Version ist für lokale Entwicklung gedacht – die App läuft in IntelliJ und greift auf eine PostgreSQL-Datenbank im Docker-Container zu.  
+Wenn du die Anwendung komplett in Containern betreiben willst, schau dir den Branch [`dockerized-app`](https://github.com/AhmedElyacoubiForJ/dockerapp/tree/dockerized-app) an.
