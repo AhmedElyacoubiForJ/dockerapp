@@ -24,6 +24,6 @@ docker run -d \
   -e POSTGRES_USER=$POSTGRES_USER \
   -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
   -v pgdata:/var/lib/postgresql/data \
-  postgres:15
+  postgres:16
 
 echo "✅ Postgres läuft jetzt unter Port 5432"
