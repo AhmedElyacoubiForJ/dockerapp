@@ -1,3 +1,34 @@
+# ============================================
+# 🐳 Docker Compose Setup für PostgreSQL + pgAdmin
+# ============================================
+
+# ────────────────────────────────────────────────────────────────
+# 📦 Wann ist dieses docker-compose.yml relevant?
+# → Immer dann, wenn die Anwendung lokal oder in Entwicklungsumgebungen
+#   als Container gestartet werden soll – inkl. Datenbank und Admin-Oberfläche.
+
+# 🔧 Was tut dieses Compose-Setup?
+# → Es startet drei Container:
+#   1. PostgreSQL-Datenbank
+#   2. pgAdmin zur Verwaltung der Datenbank
+#   3. Eine Spring Boot Anwendung, die mit der Datenbank kommuniziert
+
+# 🔄 Wie passt es in den Gesamt-Workflow?
+# → Nach dem Bauen der App mit Maven (`mvn clean package`) wird die Anwendung
+#   über Docker Compose gestartet. Die Datenbank wird automatisch bereitgestellt,
+#   und pgAdmin bietet eine visuelle Oberfläche zur Kontrolle.
+#   Ideal für lokale Entwicklung, Tests und erste CI/CD-Schritte.
+
+# 🛠️ Voraussetzungen:
+# → Eine `.env` Datei mit den nötigen Variablen (DB-Name, User, Passwort)
+# → Ein Dockerfile im Projektverzeichnis für die Spring Boot App
+
+# 🌐 Ports:
+# → App:      http://localhost:8080
+# → pgAdmin:  http://localhost:8081
+
+# ────────────────────────────────────────────────────────────────
+
 version: '3.8'  # 📦 Version der Compose-Spezifikation
 
 services:
@@ -5,25 +36,42 @@ services:
     image: postgres:16
     container_name: demo-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}  # ✅ Nutze die Standard-DB
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}     # ✅ Nutze die Standard-DB
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # 🔐 Passwort als Umgebungsvariable
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # 🔐 Passwort als Umgebungsvariable
     ports:
-      - "5432:5432"  # 🌐 Datenbank erreichbar auf localhost:5432
+      - "5432:5432"                             # 🌐 Datenbank erreichbar auf localhost:5432
     volumes:
-      - pgdata:/var/lib/postgresql/data  # 💾 Daten persistent speichern
+      - pgdata:/var/lib/postgresql/data         # 💾 Daten persistent speichern
 
-  app:  # 🚀 Spring Boot Anwendung
-    build: .  # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
+  app:                                          # 🚀 Spring Boot Anwendung
+    build: .                                    # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
     container_name: demo-app
     ports:
-      - "8080:8080"  # 🌐 App erreichbar auf localhost:8080
+      - "8080:8080"                             # 🌐 App erreichbar auf localhost:8080
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-postgres}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
-      - db  # ⏳ App startet erst, wenn DB bereit ist
+      - db              # ⏳ App startet erst, wenn DB bereit ist
+  # --------------------------------------------
+  # 🧭 pgAdmin – Web-Oberfläche für PostgreSQL
+  # --------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: demo-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Login-E-Mail
+      PGADMIN_DEFAULT_PASSWORD: secret        # Login-Passwort
+    ports:
+      - "8081:80"                             # Zugriff über http://localhost:8081
+    depends_on:
+      - db                                    # Startet nach der Datenbank
 
+  # --------------------------------------------
+  # 📦 Volumes – für persistente Daten
+  # --------------------------------------------
 volumes:
   pgdata:  # 📁 Volume für PostgreSQL-Daten
