@@ -2,43 +2,14 @@
 # 🐳 Docker Compose Setup für PostgreSQL + pgAdmin
 # ============================================
 
-# ────────────────────────────────────────────────────────────────
-# 📦 Wann ist dieses docker-compose.yml relevant?
-# → Immer dann, wenn die Anwendung lokal oder in Entwicklungsumgebungen
-#   als Container gestartet werden soll – inkl. Datenbank und Admin-Oberfläche.
-
-# 🔧 Was tut dieses Compose-Setup?
-# → Es startet drei Container:
-#   1. PostgreSQL-Datenbank
-#   2. pgAdmin zur Verwaltung der Datenbank
-#   3. Eine Spring Boot Anwendung, die mit der Datenbank kommuniziert
-
-# 🔄 Wie passt es in den Gesamt-Workflow?
-# → Nach dem Bauen der App mit Maven (`mvn clean package`) wird die Anwendung
-#   über Docker Compose gestartet. Die Datenbank wird automatisch bereitgestellt,
-#   und pgAdmin bietet eine visuelle Oberfläche zur Kontrolle.
-#   Ideal für lokale Entwicklung, Tests und erste CI/CD-Schritte.
-
-# 🛠️ Voraussetzungen:
-# → Eine `.env` Datei mit den nötigen Variablen (DB-Name, User, Passwort)
-# → Ein Dockerfile im Projektverzeichnis für die Spring Boot App
-
-# 🌐 Ports:
-# → App:      http://localhost:8080
-# → pgAdmin:  http://localhost:8081
-
-# ────────────────────────────────────────────────────────────────
-
-version: '3.8'  # 📦 Version der Compose-Spezifikation
-
 services:
   db:  # 🗄️ PostgreSQL-Datenbank
     image: postgres:16
     container_name: demo-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}     # ✅ Nutze die Standard-DB
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # 🔐 Passwort als Umgebungsvariable
+      POSTGRES_DB: ${DB_APP:-postgres}          # ✅ Nutze die Standard-DB
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}         # 🔐 Passwort als Umgebungsvariable
     ports:
       - "5432:5432"                             # 🌐 Datenbank erreichbar auf localhost:5432
     volumes:
@@ -50,11 +21,11 @@ services:
     ports:
       - "8080:8080"                             # 🌐 App erreichbar auf localhost:8080
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-postgres}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:${DB_PORT}/${DB_NAME:-postgres}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - db              # ⏳ App startet erst, wenn DB bereit ist
+      - db                                      # ⏳ App startet erst, wenn DB bereit ist
   # --------------------------------------------
   # 🧭 pgAdmin – Web-Oberfläche für PostgreSQL
   # --------------------------------------------
@@ -68,10 +39,14 @@ services:
     ports:
       - "8081:80"                             # Zugriff über http://localhost:8081
     depends_on:
-      - db                                    # Startet nach der Datenbank
+      - db                                   # Startet nach der Datenbank
 
-  # --------------------------------------------
-  # 📦 Volumes – für persistente Daten
-  # --------------------------------------------
+    # --------------------------------------------
+    # 📦 Volumes – für persistente Daten
+    # --------------------------------------------
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+      - ./.pgpass:/pgpass
+  # 📦 Volumes-Definition außerhalb der Services!
 volumes:
-  pgdata:  # 📁 Volume für PostgreSQL-Daten
+  pgdata:

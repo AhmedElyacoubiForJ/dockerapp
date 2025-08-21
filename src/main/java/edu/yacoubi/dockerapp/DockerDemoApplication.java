@@ -18,7 +18,7 @@ public class DockerDemoApplication {
 
     @GetMapping("/api/hello")
     public Map<String, String> hello() {
-        return Map.of("message", "👋 Hello from Spring Boot, connected to PostgreSQL running in a Docker container!");
+        return Map.of("message", "👨‍💻 Yacoubis App läuft jetzt im Docker-Universum – Datenbank ist am Start!");
     }
 
 }
