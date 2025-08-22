@@ -1,0 +1,57 @@
+# ============================================
+# 🐳 Docker Compose Setup für PostgreSQL + pgAdmin
+# ============================================
+
+services:
+  db:  # 🗄️ PostgreSQL-Datenbank
+    image: postgres:16
+    container_name: demo-db
+    environment:
+      POSTGRES_DB: ${DB_APP:-postgres}          # ✅ Nutze die Standard-DB
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}         # 🔐 Passwort als Umgebungsvariable
+    ports:
+      - "5432:5432"                             # 🌐 Datenbank erreichbar auf localhost:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data         # 💾 Daten persistent speichern
+
+  app:                                          # 🚀 Spring Boot Anwendung
+    build:
+      context: .                                # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
+      dockerfile: Dockerfile
+    image: myapp:latest
+    container_name: demo-app
+    ports:
+      - "8080:8080"                             # 🌐 App erreichbar auf localhost:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:${DB_PORT}/${DB_NAME:-postgres}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db                                      # ⏳ App startet erst, wenn DB bereit ist
+      - pgadmin
+    restart: unless-stopped
+  # --------------------------------------------
+  # 🧭 pgAdmin – Web-Oberfläche für PostgreSQL
+  # --------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: demo-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Login-E-Mail
+      PGADMIN_DEFAULT_PASSWORD: secret        # Login-Passwort
+    ports:
+      - "8081:80"                             # Zugriff über http://localhost:8081
+    depends_on:
+      - db                                   # Startet nach der Datenbank
+
+    # --------------------------------------------
+    # 📦 Volumes – für persistente Daten
+    # --------------------------------------------
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+      - ./.pgpass:/pgpass
+  # 📦 Volumes-Definition außerhalb der Services!
+volumes:
+  pgdata:
