@@ -1,57 +1,46 @@
-# ============================================
-# 🐳 Docker Compose Setup für PostgreSQL + pgAdmin
-# ============================================
+version: '3.8'  # Empfohlene Version für moderne Features
 
 services:
-  db:  # 🗄️ PostgreSQL-Datenbank
-    image: postgres:16
-    container_name: demo-db
-    environment:
-      POSTGRES_DB: ${DB_APP:-postgres}          # ✅ Nutze die Standard-DB
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}         # 🔐 Passwort als Umgebungsvariable
-    ports:
-      - "5432:5432"                             # 🌐 Datenbank erreichbar auf localhost:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data         # 💾 Daten persistent speichern
-
-  app:                                          # 🚀 Spring Boot Anwendung
+  app:
+    image: your-app-image:latest
+    container_name: app_container
     build:
-      context: .                                # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
+      context: ./app
       dockerfile: Dockerfile
-    image: myapp:latest
-    container_name: demo-app
     ports:
-      - "8080:8080"                             # 🌐 App erreichbar auf localhost:8080
+      - "8080:80"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:${DB_PORT}/${DB_NAME:-postgres}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      - db                                      # ⏳ App startet erst, wenn DB bereit ist
-      - pgadmin
-    restart: unless-stopped
-  # --------------------------------------------
-  # 🧭 pgAdmin – Web-Oberfläche für PostgreSQL
-  # --------------------------------------------
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: demo-pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Login-E-Mail
-      PGADMIN_DEFAULT_PASSWORD: secret        # Login-Passwort
-    ports:
-      - "8081:80"                             # Zugriff über http://localhost:8081
-    depends_on:
-      - db                                   # Startet nach der Datenbank
-
-    # --------------------------------------------
-    # 📦 Volumes – für persistente Daten
-    # --------------------------------------------
+      - NODE_ENV=production
+      - APP_SECRET=${APP_SECRET}
     volumes:
-      - ./servers.json:/pgadmin4/servers.json
-      - ./.pgpass:/pgpass
-  # 📦 Volumes-Definition außerhalb der Services!
+      - ./app:/usr/src/app
+    depends_on:
+      - db
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  db:
+    image: postgres:15
+    container_name: db_container
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
 volumes:
-  pgdata:
+  db_data:
+
+networks:
+  backend:
+    driver: bridge

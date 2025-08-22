@@ -12,3 +12,12 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+
+management:
+  endpoints:
+    web:
+      expose:
+        include: health
+    health:
+      show:
+        include: always

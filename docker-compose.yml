@@ -1,31 +1,25 @@
-# ============================================
-# 🐳 Docker Compose Setup für PostgreSQL + pgAdmin
-# ============================================
-
 services:
-  db:  # 🗄️ PostgreSQL-Datenbank
+  # --------------------------------------------
+  # 🗄️ PostgreSQL-Datenbank
+  # --------------------------------------------
+  db:
     image: postgres:16
-    container_name: demo-db
+    container_name: db_container
     environment:
-      POSTGRES_DB: ${DB_APP:-postgres}          # ✅ Nutze die Standard-DB
+      POSTGRES_DB: ${DB_APP:-postgres}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}         # 🔐 Passwort als Umgebungsvariable
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"                             # 🌐 Datenbank erreichbar auf localhost:5432
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data         # 💾 Daten persistent speichern
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  app:                                          # 🚀 Spring Boot Anwendung
-    build: .                                    # 🔨 Dockerfile im aktuellen Verzeichnis verwenden
-    container_name: demo-app
-    ports:
-      - "8080:8080"                             # 🌐 App erreichbar auf localhost:8080
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:${DB_PORT}/${DB_NAME:-postgres}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      - db                                      # ⏳ App startet erst, wenn DB bereit ist
   # --------------------------------------------
   # 🧭 pgAdmin – Web-Oberfläche für PostgreSQL
   # --------------------------------------------
@@ -34,19 +28,49 @@ services:
     container_name: demo-pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Login-E-Mail
-      PGADMIN_DEFAULT_PASSWORD: secret        # Login-Passwort
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: secret
     ports:
-      - "8081:80"                             # Zugriff über http://localhost:8081
+      - "8081:80"
     depends_on:
-      - db                                   # Startet nach der Datenbank
-
-    # --------------------------------------------
-    # 📦 Volumes – für persistente Daten
-    # --------------------------------------------
+      db:
+        condition: service_healthy
     volumes:
       - ./servers.json:/pgadmin4/servers.json
       - ./.pgpass:/pgpass
-  # 📦 Volumes-Definition außerhalb der Services!
+
+  # --------------------------------------------
+  # 🚀 Spring Boot Anwendung
+  # --------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: myapp:distroless-image
+    container_name: demo-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:${DB_PORT:-5432}/${DB_NAME:-postgres}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      pgadmin:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s http://localhost:8080/actuator/health | grep '\"status\":\"UP\"' || exit 1" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      # start_period: 40s
+
+# --------------------------------------------
+#    healthcheck:
+# test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+# 📦 Volumes – für persistente Daten
+# --------------------------------------------
 volumes:
   pgdata:
