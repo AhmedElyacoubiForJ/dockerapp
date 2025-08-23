@@ -1,13 +1,21 @@
-# Hinweis: Distroless hat kein Shell, kein Paketmanager, kein wget, kein bash.
-# Nur Java und dein JAR. Super sicher, super schlank.
+# 🏗️ STAGE 1: Build mit Maven
+FROM eclipse-temurin:17-jdk AS builder
+WORKDIR /app
 
-# STAGE 1: Build mit Maven
-FROM maven:3.9.4-eclipse-temurin-17 AS builder
-WORKDIR /build
-COPY . .
-RUN mvn clean package -DskipTests
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+COPY src ./src
 
-# STAGE 2: Distroless Runtime
-FROM gcr.io/distroless/java17-debian11
-COPY --from=builder /build/target/dockerapp-0.0.1-SNAPSHOT.jar /app.jar
-CMD ["app.jar"]
+RUN ./mvnw clean package -DskipTests
+
+# 🧼 Runtime Stage: schlanker Container
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+COPY --from=builder /app/target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
+
+# 🔍 Healthcheck: prüft alle 30s, ob Port 8080 antwortet
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+CMD ["java", "-jar", "app.jar"]

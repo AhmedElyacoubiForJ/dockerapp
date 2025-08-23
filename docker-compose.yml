@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: myapp:distroless-image
+    image: myapp:slim-container
     container_name: demo-app
     ports:
       - "8080:8080"
@@ -61,16 +61,19 @@ services:
         condition: service_started
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s http://localhost:8080/actuator/health | grep '\"status\":\"UP\"' || exit 1" ]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 30s
       timeout: 3s
       retries: 3
       # start_period: 40s
+    networks:
+      - backend
 
 # --------------------------------------------
-#    healthcheck:
-# test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
 # 📦 Volumes – für persistente Daten
 # --------------------------------------------
 volumes:
   pgdata:
+
+networks:
+  backend:
