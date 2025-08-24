@@ -3,9 +3,10 @@
 # Liste deiner Images (lokal gebaut oder aus Registry)
 IMAGES=(
   "myapp:latest"
-  "myapp:slim-container"
-  "myapp:distroless-image"
-  "myapp:secure-slim-final"
+    "myapp:slim-container"
+    "myapp:alpine-slim"
+    "myapp:distroless-image"
+    "myapp:secure-slim-final"
 )
 
 echo "📦 Vergleich der Image-Größen:"

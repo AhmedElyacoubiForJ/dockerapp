@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: myapp:slim-container
+    image: myapp:distroless-image
     container_name: demo-app
     ports:
       - "8080:8080"
