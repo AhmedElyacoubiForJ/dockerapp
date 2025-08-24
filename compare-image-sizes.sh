@@ -4,6 +4,7 @@
 IMAGES=(
   "myapp:latest"
   "myapp:slim-container"
+  "myapp:alpine-slim"
   "myapp:distroless-image"
   "myapp:secure-slim-final"
 )
