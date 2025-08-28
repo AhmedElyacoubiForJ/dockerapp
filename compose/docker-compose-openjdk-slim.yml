@@ -1,0 +1,55 @@
+# 🚀 Starten
+# env $(cat .env | xargs) docker compose -f compose/docker-compose-openjdk-slim.yml up --build -d
+# docker compose --env-file .env -f compose/docker-compose-openjdk-slim.yml up --build -d
+
+
+# docker compose --env-file .env.dev -f compose/docker-compose-openjdk-slim.yml up --build -d
+
+# PostgreSQL direkt testen
+# docker exec -it db_container psql -U postgres -d postgres
+# SELECT current_database();
+
+# Spring Boot Logs prüfen
+# docker logs mycontainer
+
+services:
+  # --------------------------------------------
+  # 🚀 Spring Boot Anwendung
+  # --------------------------------------------
+  app:
+    image: myimage:openjdk-slim
+    container_name: mycontainer-openjdk-slim
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  # --------------------------------------------
+  # 🗄️ PostgreSQL-Datenbank
+  # --------------------------------------------
+  db:
+    image: postgres:16
+    container_name: db_container
+    environment:
+      POSTGRES_DB: ${DB_APP}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+# --------------------------------------------
+# 📦 Volumes – für persistente Daten
+# --------------------------------------------
+volumes:
+  pgdata:

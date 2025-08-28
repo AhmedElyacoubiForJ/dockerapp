@@ -71,6 +71,14 @@ volumes:
 
 ```
 
+## 🧠 Bonus-Tipp: .env testen
+Du kannst prüfen, ob die Variablen korrekt geladen wurden:
+```dockercompose
+docker compose --env-file .env config
+```
+
+
+
 ## 🌐 Ports:
 > → App:      [DemoApp](http://localhost:8080)
 > → pgAdmin:  [DB-Client](http://localhost:8081)

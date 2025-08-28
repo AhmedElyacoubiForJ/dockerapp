@@ -1,28 +1,53 @@
-# ────────────────────────────────────────────────────────────────
-# 📦 Wann ist dieses Dockerfile relevant?
-# → Immer dann, wenn die Anwendung als Container ausgeführt werden soll.
-#   z.B. lokal, in der Cloud oder in CI/CD-Pipelines.
-
-# 🔧 Was tut dieses Dockerfile?
-# → Es erstellt ein schlankes Docker-Image aus dem kompilierten Java-JAR,
-#   basierend auf dem offiziellen OpenJDK-Image.
-
-# 🔄 Wie passt es in den Gesamt-Workflow?
-# → Nach dem Bauen der App mit Maven (`mvn clean package`) wird dieses Dockerfile verwendet,
-#   um ein ausführbares Image zu erzeugen.
-#   Dieses Image kann dann mit `docker run` oder `docker compose` gestartet werden,
-#   um die Anwendung bereitzustellen.
-
-# ────────────────────────────────────────────────────────────────
-
-
 # Nutze ein leichtes Java-Image
 FROM openjdk:17-jdk-slim
+
+# Setze das Arbeitsverzeichnis
+WORKDIR /app
 
 # Kopiere das JAR ins Image
 COPY target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
 
-# Starte die App
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+RUN apt-get update && apt-get install -y curl
+#RUN apt-get update && apt-get install -y curl \
+#  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+
+# Erstelle einen nicht-root Benutzer
+# 🔒 App läuft als nicht-privilegierter Benutzer
+# 🧱 Der Container ist isolierter: Selbst wenn jemand Zugriff bekommt,
+# kann er keine Systemdateien manipulieren oder root-Kommandos ausführen.
+RUN useradd -m appuser
+USER appuser
+
+# Starte die App
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Healthcheck (Beispiel: HTTP-Endpunkt)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# oder prüfe, ob der Prozess läuft.
+# HEALTHCHECK CMD pgrep java || exit 1
+
+# Hinweis: Build erfolgt über IntelliJ IDEA
 # docker build -f ./dockerfiles/Dockerfile.openjdk-slim -t myimage:openjdk-slim .
+
+# 🛠️ Schritte zum Testen des HEALTHCHECK
+# 1. Image bauen
+#   docker build -f ./dockerfiles/Dockerfile.openjdk-slim -t myimage:openjdk-slim .
+
+# 2. Container starten
+#   docker run -d --name mycontainer -p 8080:8080 myimage:openjdk-slim
+
+# 3. Healthcheck prüfen
+#   docker inspect --format='{{json .State.Health}}' mycontainer | jq
+#   Oder docker ps
+
+# 4. 🧪 Bonus-Tipp: Manuell testen
+#   curl http://localhost:8080/actuator/health
+
+# 5. Prüfe die Logs der App:
+#   docker logs mycontainer
+
+# 6. Oder rufe den erweiterten Healthcheck auf:
+#   curl http://localhost:8080/actuator/health?details=true
