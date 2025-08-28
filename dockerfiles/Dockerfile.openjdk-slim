@@ -29,8 +29,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # oder prüfe, ob der Prozess läuft.
 # HEALTHCHECK CMD pgrep java || exit 1
 
-# Hinweis: Build erfolgt über IntelliJ IDEA
-# docker build -f ./dockerfiles/Dockerfile.openjdk-slim -t myimage:openjdk-slim .
+# Hinweis: APP Build erfolgt über IntelliJ IDEA
 
 # 🛠️ Schritte zum Testen des HEALTHCHECK
 # 1. Image bauen

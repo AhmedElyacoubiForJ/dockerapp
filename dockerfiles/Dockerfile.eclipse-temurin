@@ -2,14 +2,14 @@
 FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 
+# maven from Iintellij
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 COPY src ./src
 
 RUN ./mvnw clean package -DskipTests
 
-# 🧼 Runtime Stage: schlanker
-# FROM temurin:17-jre-alpine
+# 🧼 Runtime Stage
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
@@ -19,6 +19,37 @@ COPY --from=builder /app/target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 
+# Erstelle einen nicht-root Benutzer
+# 🔒 App läuft als nicht-privilegierter Benutzer
+# 🧱 Der Container ist isolierter: Selbst wenn jemand Zugriff bekommt,
+# kann er keine Systemdateien manipulieren oder root-Kommandos ausführen.
+RUN useradd -m appuser
+USER appuser
+
 CMD ["java", "-jar", "app.jar"]
 
-# docker build -f ./dockerfiles/Dockerfile.eclipse-temurin -t myimage:eclipse-temurin .
+# 🚀 Image bauen:
+#   docker build -f dockerfiles/Dockerfile.eclipse-temurin -t myimage:eclipse-temurin .
+
+# 🐳 Container starten
+#   docker run -d --name mycontainer-eclipse-temurin -p 8088:8088 myimage:eclipse-temurin
+#docker run -d --name mycontainer-eclipse-temurin -p 8080:8080 \
+#  -e DB_HOST=host.docker.internal \
+#  -e DB_PORT=5432 \
+#  -e DB_NAME=postgres \
+#  -e DB_USER=postgres \
+#  -e DB_PASSWORD=geheim \
+#  myimage:eclipse-temurin
+
+
+# 🔍 Healthcheck prüfen
+#   curl http://localhost:8080/actuator/health?details=true
+#   docker inspect --format='{{json .State.Health}}' mycontainer-eclipse-temurin | jq
+
+# 📜 Logs ansehen
+#   docker logs mycontainer-eclipse-temurin
+
+# 🧠 Container analysieren
+#   docker exec -it mycontainer-eclipse-temurin sh
+#   docker inspect mycontainer-eclipse-temurin
+
