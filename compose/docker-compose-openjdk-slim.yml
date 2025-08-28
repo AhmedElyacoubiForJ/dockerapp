@@ -5,6 +5,16 @@
 
 # docker compose --env-file .env.dev -f compose/docker-compose-openjdk-slim.yml up --build -d
 
+# Direkt prüfen, ob der Container korrekt läuft:
+# docker ps --filter "name=mycontainer-openjdk-slim"
+
+# Und für die Analyse:
+# docker exec -it mycontainer-openjdk-slim sh
+
+# Oder
+# docker inspect mycontainer-openjdk-slim
+
+
 # PostgreSQL direkt testen
 # docker exec -it db_container psql -U postgres -d postgres
 # SELECT current_database();
