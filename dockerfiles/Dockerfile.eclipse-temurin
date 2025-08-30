@@ -31,6 +31,16 @@ CMD ["java", "-jar", "app.jar"]
 # 🚀 Image bauen:
 #   docker build -f dockerfiles/Dockerfile.eclipse-temurin -t myimage:eclipse-temurin .
 
+# 🐳 PostgreSQL-Container starten
+#docker run -d \
+#  --name db_container \
+#  -e POSTGRES_DB=postgres \
+#  -e POSTGRES_USER=postgres \
+#  -e POSTGRES_PASSWORD=geheim \
+#  -p 5432:5432 \
+#  postgres:16
+
+
 # 🐳 Container starten
 #   docker run -d --name mycontainer-eclipse-temurin -p 8088:8088 myimage:eclipse-temurin
 #docker run -d --name mycontainer-eclipse-temurin -p 8080:8080 \

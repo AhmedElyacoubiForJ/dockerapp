@@ -1,0 +1,55 @@
+services:
+  app:
+    image: myimage:eclipse-temurin
+    container_name: mycontainer-eclipse-temurin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  db:
+    image: postgres:16
+    container_name: db_container
+    environment:
+      POSTGRES_DB: ${DB_APP}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
+
+# 🧹 Schritt 1: Container stoppen und löschen
+# man kann beiden Container sauber beenden und entfernen:
+# docker stop mycontainer-eclipse-temurin db_container
+# docker rm mycontainer-eclipse-temurin db_container
+
+# Falls man sicher gehen will, dass auch keine Netzwerke oder Volumes übrig bleiben:
+#  docker volume prune
+#  docker network prune
+
+# 🧱 Schritt 2: Compose-Datei vorbereiten s.h. this file
+
+# 🚀 Schritt 3: Compose starten
+# docker compose --env-file .env -f ./compose/docker-compose-eclipse-temurin.yml up -d
+# Danach kann man wieder prüfen:
+# docker ps
+# curl http://localhost:8080/db-info
+
+# 🔧 Bonus-Tipp: .env für mehrere Compose-Dateien
+# Wenn man mehrere Compose-Dateien nutzt (z.B. für Dev, Test, Prod)
+# docker compose --env-file .env.dev -f docker-compose-dev.yml up -d
+# docker compose --env-file .env.prod -f docker-compose-prod.yml up -d
