@@ -6,10 +6,12 @@ COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 COPY src ./src
 
+# Stelle sicher, dass mvnw ausführbar ist
+RUN chmod +x mvnw
+
 RUN ./mvnw clean package -DskipTests
 
-# 🧼 Runtime Stage: schlanker
-# STAGE 2: Alpine Runtime
+# 🧼 Runtime Stage 2: Alpine Runtime
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
@@ -18,8 +20,48 @@ COPY --from=builder /app/target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
 # 🔍 Optional: curl für Healthcheck
 RUN apk add --no-cache curl
 
-HEALTHCHECK CMD curl -f http://localhost:8080/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# 🔒 Nicht-root Benutzer
+RUN adduser -D -h /home/appuser appuser
+USER appuser
 
 CMD ["java", "-jar", "app.jar"]
 
+
+# 🚀 Image bauen:
 # docker build -f ./dockerfiles/Dockerfile.eclipse-temurin-alpine -t myimage:eclipse-temurin-alpine .
+
+# 🐳 Container starten
+#   docker run -d --name mycontainer-eclipse-temurin-alpine -p 8081:8080 \
+#  -e DB_HOST=host.docker.internal \
+#  -e DB_PORT=5432 \
+#  -e DB_NAME=postgres \
+#  -e DB_USER=postgres \
+#  -e DB_PASSWORD=geheim \
+#  myimage:eclipse-temurin-alpine
+
+# docker run -d --name mycontainer-eclipse-temurin-alpine \
+#    --env-file .env.dev \
+#    -p 8081:8080 \
+#    myimage:eclipse-temurin-alpine
+
+# 🔍 Healthcheck prüfen
+#   curl http://localhost:8080/actuator/health?details=true
+#   docker inspect --format='{{json .State.Health}}' mycontainer-eclipse-temurin-alpine | jq
+
+# 📜 Logs ansehen
+#   docker logs mycontainer-eclipse-temurin-alpine
+
+# 🧠 Container analysieren
+#   docker exec -it mycontainer-eclipse-temurin-alpine sh
+#   docker inspect mycontainer-eclipse-temurin-alpine
+
+# 🛠️ So prüfst du, ob curl installiert ist:
+#   docker exec -it mycontainer-eclipse-temurin-alpine sh -c "which curl"
+#   which curl zeigt dir den Pfad zu curl, wenn es installiert ist.
+# Oder alternativ:
+#   docker exec -it mycontainer-eclipse-temurin-alpine sh
+    ## Dann im Container:
+    #curl --version

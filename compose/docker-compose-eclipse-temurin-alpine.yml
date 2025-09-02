@@ -1,11 +1,9 @@
 services:
   app:
-    image: myimage:eclipse-temurin
-    container_name: mycontainer-eclipse-temurin
+    image: myimage:eclipse-temurin-alpine
+    container_name: mycontainer-eclipse-temurin-alpine
     ports:
-      - "8081:8080"
-    depends_on:
-      - db
+      - "8082:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
@@ -16,22 +14,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-  db:
-    image: postgres:16
-    container_name: db_container
-    environment:
-      POSTGRES_DB: ${DB_APP}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+#  db:
+#    image: postgres:16
+#    container_name: db_container
+#    environment:
+#      POSTGRES_DB: ${DB_APP}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
 
 volumes:
   pgdata:
@@ -40,6 +33,7 @@ networks:
   default:
     external: true
     name: appnet
+
 
 
 # 🧹 Schritt 1: Container stoppen und löschen
@@ -54,8 +48,8 @@ networks:
 # 🧱 Schritt 2: Compose-Datei vorbereiten s.h. this file
 
 # 🚀 Schritt 3: Compose starten
-# docker compose --env-file .env -f ./compose/docker-compose-eclipse-temurin.yml up -d
-# docker compose -p temurin --env-file .env -f ./compose/docker-compose-eclipse-temurin.yml up -d
+# docker compose --env-file .env -f ./compose/docker-compose-eclipse-temurin-alpine.yml up -d
+# docker compose -p temurin-alpine --env-file .env -f ./compose/docker-compose-eclipse-temurin-alpine.yml up -d
 # Danach kann man wieder prüfen:
 # docker ps
 # curl http://localhost:8080/db-info

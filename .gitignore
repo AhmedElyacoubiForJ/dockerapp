@@ -14,6 +14,7 @@ Thumbs.db
 
 # Secrets & Local Config
 .env
+.env.dev
 .env-config
 .pgpass
 servers.json
