@@ -1,0 +1,39 @@
+services:
+  app:
+    image: myimage:distroless
+    container_name: mycontainer-distroless
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+#      interval: 30s
+#      timeout: 5s
+#      retries: 3
+#      start_period: 10s
+#  db:
+#    image: postgres:16
+#    container_name: db_container
+#    environment:
+#      POSTGRES_DB: ${DB_APP}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    external: true
+    name: appnet
+
+# 🚀 Compose starten
+# docker compose -p distroless --env-file .env -f ./compose/docker-compose-distroless.yml up -d
+

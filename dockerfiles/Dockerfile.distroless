@@ -6,16 +6,24 @@ COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 COPY src ./src
 
-RUN ./mvnw clean package -DskipTests
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests -B
 
-# 🧼 Runtime Stage: schlanker Container
+# 🧼 STAGE 2: Distroless Runtime
 FROM gcr.io/distroless/java17-debian11
 WORKDIR /app
 
-COPY --from=builder /app/target/dockerapp-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/target/dockerapp-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# 🔍 Healthcheck: ????
+# 🔒 Sicherer Benutzer
+USER nonroot
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["/app/app.jar"]
 
+
+
+
+# 🚀 Image bauen:
 # docker build -f ./dockerfiles/Dockerfile.distroless -t myimage:distroless .
+
+# docker run -d --name mycontainer-distroless --env-file .env.dev -p 8083:8080 myimage:distroless
